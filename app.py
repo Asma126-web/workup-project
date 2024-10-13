@@ -54,12 +54,23 @@ def main():
         if member_name and expertise:
             expertise_list.append(f"{member_name}: {expertise}")
 
-    # Button to trigger the task assignment
-    if st.sidebar.button("Assign Tasks"):
+    # Display the input on the main screen in real-time
+    if project_description:
+        st.subheader("Project Description:")
+        st.write(project_description)
+
+    if expertise_list:
+        st.subheader("Team Members and Expertise:")
+        for member in expertise_list:
+            st.write(member)
+
+    # Button to trigger the task assignment (label changed to "Assign Task")
+    if st.sidebar.button("Assign Task"):
         if project_description and expertise_list:
             # Join the expertise list as a string
             expertise_str = "; ".join(expertise_list)
             assignment_response = get_project_assignment(project_description, expertise_str)
+            st.subheader("AI Task Assignment:")
             st.write(assignment_response)
         else:
             st.sidebar.warning("Please enter the project description, member names, and their expertise.")
