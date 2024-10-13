@@ -10,15 +10,15 @@ model_name = os.getenv("MODEL_NAME", "meta-llama/Llama-3.2-3B-Instruct-Turbo")
 client = OpenAI(api_key=api_key, base_url=base_url)
 
 # Define the function to get project assignment
-def get_project_assignment(project_description, expertise_list):
+def get_project_assignment(project_description, expertise_list, language):
     try:
-        user_input = f"The project is described as: '{project_description}'. The following people with different expertise are involved: {expertise_list}. Please intelligently assign tasks based on their expertise and guide them."
+        user_input = f"The project is described as: '{project_description}'. The following people with different expertise are involved: {expertise_list}. The preferred programming language is {language}. Please intelligently assign tasks based on their expertise and guide them, ensuring to use {language} where applicable."
         response = client.chat.completions.create(
             model=model_name,
             messages=[
                 {
                     "role": "system",
-                    "content": "You are an AI assistant who assigns project tasks intelligently based on expertise.",
+                    "content": "You are an AI assistant who assigns project tasks intelligently based on expertise and the preferred programming language.",
                 },
                 {
                     "role": "user",
@@ -54,6 +54,9 @@ def main():
         if member_name and expertise:
             expertise_list.append(f"{member_name}: {expertise}")
 
+    # Add a selectbox for preferred programming language
+    language = st.sidebar.selectbox("Preferred Programming Language", ["Python", "Java", "C++", "C"])
+
     # Display the input on the main screen in real-time
     if project_description:
         st.subheader("Project Description:")
@@ -64,16 +67,16 @@ def main():
         for member in expertise_list:
             st.write(member)
 
-    # Button to trigger the task assignment (label changed to "Assign Task")
-    if st.sidebar.button("Assign Task"):
+    # Button to trigger the task assignment (added on the main screen)
+    if st.button("Assign Task"):
         if project_description and expertise_list:
             # Join the expertise list as a string
             expertise_str = "; ".join(expertise_list)
-            assignment_response = get_project_assignment(project_description, expertise_str)
+            assignment_response = get_project_assignment(project_description, expertise_str, language)
             st.subheader("AI Task Assignment:")
             st.write(assignment_response)
         else:
-            st.sidebar.warning("Please enter the project description, member names, and their expertise.")
+            st.warning("Please enter the project description, member names, and their expertise.")
 
 if __name__ == "__main__":
     main()
