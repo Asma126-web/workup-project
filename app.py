@@ -3,7 +3,7 @@ import streamlit as st
 from openai import OpenAI, OpenAIError
 
 # Define API parameters
-api_key = os.getenv("OPENAI_API_KEY", "8772096b1b3248128cf4072be826ee90")  
+api_key = os.getenv("OPENAI_API_KEY", "your_api_key_here")  
 base_url = os.getenv("API_BASE_URL", "https://api.aimlapi.com")
 model_name = os.getenv("MODEL_NAME", "meta-llama/Llama-3.2-3B-Instruct-Turbo")  
 
@@ -94,25 +94,24 @@ def main():
         for member in expertise_list:
             st.write(member)
 
-    # Button to trigger the task assignment (added on the main screen)
+    # Button to trigger both the task assignment and app name generation
     if st.button("Assign Task"):
         if project_description and expertise_list:
             # Join the expertise list as a string
             expertise_str = "; ".join(expertise_list)
+
+            # Get task assignment
             assignment_response = get_project_assignment(project_description, expertise_str, language)
             st.subheader("AI Task Assignment:")
             st.write(assignment_response)
-        else:
-            st.warning("Please enter the project description, member names, and their expertise.")
 
-    # Button to generate app name
-    if st.button("Generate App Name"):
-        if project_description:
+            # Get app name suggestion
             app_name_response = get_app_name_suggestion(project_description)
             st.subheader("App Name Suggestion:")
             st.write(app_name_response)
+
         else:
-            st.warning("Please enter the project description to generate an app name.")
+            st.warning("Please enter the project description, member names, and their expertise.")
 
 if __name__ == "__main__":
     main()
