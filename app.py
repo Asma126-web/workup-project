@@ -45,24 +45,24 @@ def main():
     project_description = st.sidebar.text_area("Enter the project description:")
     num_members = st.sidebar.number_input("Enter the number of team members:", min_value=1, max_value=10, value=1)
 
-    # Input fields for team members' names and expertise
+    # Input fields for team members' names and expertise in the sidebar
     expertise_list = []
-    st.subheader("Team Members' Names and Expertise")
+    st.sidebar.subheader("Team Members' Names and Expertise")
     for i in range(num_members):
-        member_name = st.text_input(f"Member {i + 1} name:")
-        expertise = st.text_input(f"{member_name}'s expertise:", key=f"expertise_{i}")
+        member_name = st.sidebar.text_input(f"Member {i + 1} name:", key=f"member_name_{i}")
+        expertise = st.sidebar.text_input(f"{member_name}'s expertise:", key=f"expertise_{i}")
         if member_name and expertise:
             expertise_list.append(f"{member_name}: {expertise}")
 
     # Button to trigger the task assignment
-    if st.button("Assign Tasks"):
+    if st.sidebar.button("Assign Tasks"):
         if project_description and expertise_list:
             # Join the expertise list as a string
             expertise_str = "; ".join(expertise_list)
             assignment_response = get_project_assignment(project_description, expertise_str)
             st.write(assignment_response)
         else:
-            st.warning("Please enter the project description, member names, and their expertise.")
+            st.sidebar.warning("Please enter the project description, member names, and their expertise.")
 
 if __name__ == "__main__":
     main()
