@@ -3,9 +3,9 @@ import streamlit as st
 from openai import OpenAI, OpenAIError
 
 # Define API parameters
-api_key = os.getenv("OPENAI_API_KEY", "8772096b1b3248128cf4072be826ee90")  
+api_key = os.getenv("OPENAI_API_KEY", "your_api_key_here")  
 base_url = os.getenv("API_BASE_URL", "https://api.aimlapi.com")
-model_name = os.getenv("MODEL_NAME", "meta-llama/Llama-3.2-3B-Instruct-Turbo")
+model_name = os.getenv("MODEL_NAME", "meta-llama/Llama-3.2-3B-Instruct-Turbo")  
 
 client = OpenAI(api_key=api_key, base_url=base_url)
 
@@ -36,9 +36,36 @@ def get_project_assignment(project_description, expertise_list, language):
     except Exception as e:
         return f"An error occurred: {str(e)}"
 
+# Define the function to get unique app name suggestions
+def get_app_name_suggestion(project_description):
+    try:
+        user_input = f"Based on the project description: '{project_description}', suggest a unique and creative name for an app."
+        response = client.chat.completions.create(
+            model=model_name,
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are an AI assistant specializing in branding and app naming.",
+                },
+                {
+                    "role": "user",
+                    "content": user_input,
+                },
+            ],
+        )
+
+        # Extract and return the assistant's response
+        message = response.choices[0].message.content
+        return f"Suggested App Name: {message}"
+
+    except OpenAIError as e:
+        return f"API request failed: {str(e)}"
+    except Exception as e:
+        return f"An error occurred: {str(e)}"
+
 # Streamlit App
 def main():
-    st.title("WorkUp: AI Task Assignment")
+    st.title("WorkUp: AI Task Assignment and App Name Generator")
 
     # Sidebar for project description and member count
     st.sidebar.header("Project Details")
@@ -77,6 +104,15 @@ def main():
             st.write(assignment_response)
         else:
             st.warning("Please enter the project description, member names, and their expertise.")
+
+    # Button to generate app name
+    if st.button("Generate App Name"):
+        if project_description:
+            app_name_response = get_app_name_suggestion(project_description)
+            st.subheader("App Name Suggestion:")
+            st.write(app_name_response)
+        else:
+            st.warning("Please enter the project description to generate an app name.")
 
 if __name__ == "__main__":
     main()
