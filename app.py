@@ -1,11 +1,12 @@
 import os
 import streamlit as st
 from openai import OpenAI, OpenAIError
+import pandas as pd  # To handle file input
 
 # Define API parameters
-api_key = os.getenv("OPENAI_API_KEY", "8772096b1b3248128cf4072be826ee90")  
+api_key = os.getenv("OPENAI_API_KEY", "8772096b1b3248128cf4072be826ee90")
 base_url = os.getenv("API_BASE_URL", "https://api.aimlapi.com")
-model_name = os.getenv("MODEL_NAME", "meta-llama/Llama-3.2-3B-Instruct-Turbo")  
+model_name = os.getenv("MODEL_NAME", "meta-llama/Llama-3.2-3B-Instruct-Turbo")
 
 client = OpenAI(api_key=api_key, base_url=base_url)
 
@@ -63,23 +64,47 @@ def get_app_name_suggestion(project_description):
     except Exception as e:
         return f"An error occurred: {str(e)}"
 
+# Function to process uploaded file
+def process_uploaded_file(uploaded_file):
+    if uploaded_file is not None:
+        try:
+            # Try reading the file as a CSV
+            df = pd.read_csv(uploaded_file)
+            # Extract project description and expertise from the dataframe
+            project_description = df.iloc[0]['Project Description'] if 'Project Description' in df.columns else ''
+            expertise_list = df[['Name', 'Expertise']].apply(lambda row: f"{row['Name']}: {row['Expertise']}", axis=1).tolist()
+            return project_description, expertise_list
+        except Exception as e:
+            st.error(f"Error processing file: {e}")
+            return None, None
+    return None, None
+
 # Streamlit App
 def main():
     st.title("WorkUp: AI Task Assignment and App Name Generator")
 
     # Sidebar for project description and member count
     st.sidebar.header("Project Details")
-    project_description = st.sidebar.text_area("Enter the project description:")
-    num_members = st.sidebar.number_input("Enter the number of team members:", min_value=1, max_value=10, value=1)
+    
+    # File uploader to upload project description and team members
+    uploaded_file = st.sidebar.file_uploader("Upload a file (CSV with columns 'Project Description', 'Name', 'Expertise')", type=['csv'])
 
-    # Input fields for team members' names and expertise in the sidebar
+    # Manual input as fallback
+    st.sidebar.write("Or, fill out the fields below manually if no file is uploaded.")
+    project_description = st.sidebar.text_area("Enter the project description:") if uploaded_file is None else ""
+    num_members = st.sidebar.number_input("Enter the number of team members:", min_value=1, max_value=10, value=1) if uploaded_file is None else 1
+
     expertise_list = []
-    st.sidebar.subheader("Team Members' Names and Expertise")
-    for i in range(num_members):
-        member_name = st.sidebar.text_input(f"Member {i + 1} name:", key=f"member_name_{i}")
-        expertise = st.sidebar.text_input(f"{member_name}'s expertise:", key=f"expertise_{i}")
-        if member_name and expertise:
-            expertise_list.append(f"{member_name}: {expertise}")
+    st.sidebar.subheader("Team Members' Names and Expertise") if uploaded_file is None else None
+    if uploaded_file is None:
+        for i in range(num_members):
+            member_name = st.sidebar.text_input(f"Member {i + 1} name:", key=f"member_name_{i}")
+            expertise = st.sidebar.text_input(f"{member_name}'s expertise:", key=f"expertise_{i}")
+            if member_name and expertise:
+                expertise_list.append(f"{member_name}: {expertise}")
+    else:
+        # Process uploaded file
+        project_description, expertise_list = process_uploaded_file(uploaded_file)
 
     # Add a selectbox for preferred programming language
     language = st.sidebar.selectbox("Preferred Programming Language", ["Python", "Java", "C++", "C"])
@@ -111,7 +136,7 @@ def main():
             st.write(app_name_response)
 
         else:
-            st.warning("Please enter the project description, member names, and their expertise.")
+            st.warning("Please upload a valid file or enter the project description, member names, and their expertise.")
 
 if __name__ == "__main__":
     main()
