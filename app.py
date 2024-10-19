@@ -4,7 +4,7 @@ from openai import OpenAI, OpenAIError
 import pandas as pd  # To handle file input
 
 # Define API parameters
-api_key = os.getenv("OPENAI_API_KEY", "8772096b1b3248128cf4072be826ee90")
+api_key = os.getenv("OPENAI_API_KEY", "93a2e316faaf46e386453a2ac90ebf0a")
 base_url = os.getenv("API_BASE_URL", "https://api.aimlapi.com")
 model_name = os.getenv("MODEL_NAME", "meta-llama/Llama-3.2-3B-Instruct-Turbo")
 
